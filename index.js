@@ -41,6 +41,11 @@ function sniffService(request) {
 		return "git"
 	}
 
+	let isGithubContentURL = /^(https?:\/\/)?(raw|gist)\.githubusercontent\.com($|\/)/.test(basicURLObj.pathname.substring(1))
+	if (isGithubContentURL) {
+		return "proxy"
+	}
+
 	return "unknown"
 }
 
@@ -53,6 +58,11 @@ async function handleRequest(request, env, ctx) {
 	}
 
 	const basicURLObj = new URL(request.url)
+	const pathAsURLString = () => {
+		let baseURL = basicURLObj.pathname.substring(1) + basicURLObj.search
+		baseURL = /^https?:\/\//.test(baseURL) ? baseURL : "https://" + baseURL
+		return baseURL
+	}
 
 	const service = sniffService(request)
 
@@ -61,11 +71,15 @@ async function handleRequest(request, env, ctx) {
 	} else if (service === "github") {
 		return GithubMirror.handleRequest(request, env, ctx)
 	} else if (service === "git") {
-		let baseURL = basicURLObj.pathname.substring(1) + basicURLObj.search
-		baseURL = /^https?:\/\//.test(baseURL) ? baseURL : "https://" + baseURL
+		let baseURL = pathAsURLString()
 		baseURL = baseURL.replace(/^http:\/\//, "https://")
 		return Res.proxy(baseURL, request)
+	} else if (service === "proxy") {
+		let baseURL = pathAsURLString()
+		return Res.proxy(baseURL, request)
 	}
+
+	if (basicURLObj.pathname !== "/") return Res.NotFound()
 
 	const mainPageJSON = {
 		"service": `cf-worker-${env.NAME}`,
@@ -74,7 +88,8 @@ async function handleRequest(request, env, ctx) {
 		"usage": {
 			"docker": DockerMirror.UPSTREAM_MAP,
 			"github": GithubMirror.UPSTREAM_MAP,
-			"git": "<repo-url>"
+			"git": "<repo-url>",
+			"proxy": "<url>"
 		}
 	}
 
