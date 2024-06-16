@@ -23,14 +23,14 @@ export function secureConfig(env) {
 	let secure = {
 		AllowHTML: 0,
 		EnableMainSite: 1,
-		MainSiteDomain: [],
+		MainSiteDomain: ['*'],
 		EnableSubDomain: 1,
 		SubKeyList: [],
 	}
 	secure = isJSON(env.SECURE_CONFIG) ? env.SECURE_CONFIG : {}
 	secure.AllowHTML = envBool(setDefault(secure.AllowHTML, 0))
 	secure.EnableMainSite = envBool(setDefault(secure.EnableMainSite, 1))
-	secure.MainSiteDomain = setDefault(secure.MainSiteDomain, [])
+	secure.MainSiteDomain = setDefault(secure.MainSiteDomain, ['*'])
 	secure.EnableSubDomain = envBool(setDefault(secure.EnableSubDomain, 1))
 	secure.SubKeyList = setDefault(secure.SubKeyList, [])
 	return secure

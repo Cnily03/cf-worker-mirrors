@@ -32,7 +32,6 @@ export async function handleRequest(request, env, ctx) {
             return fetch(targetURL.toString(), {
                 method: request.method,
                 ...["GET", "HEAD"].includes(request.method) ? {} : { body: await request.arrayBuffer() },
-                body: await request.arrayBuffer(),
                 redirect: "follow",
                 follow: 5
             })
@@ -61,9 +60,19 @@ export async function handleRequest(request, env, ctx) {
     if (contentType.startsWith("application/x-")) return resp
 
     const conf = secureConfig(env)
-    if (!conf.AllowHTML && contentType.startsWith("text/html")) return Res.Forbidden("HTML is forbidden")
 
+    // not allow html, return text/html as plain text
+    if (!conf.AllowHTML) {
+        const headers = new Headers(resp.headers)
+        if (contentType.startsWith("text/html")) headers.set("Content-Type", "text/plain")
+        return new Response(resp.body, {
+            status: resp.status,
+            statusText: resp.statusText,
+            headers: headers
+        })
+    }
 
+    // allow html, start to replace
     if (["text/html", "text/css", "application/javascript"].some(t => contentType.startsWith(t))) {
         const text = await resp.text()
         let repalced = text

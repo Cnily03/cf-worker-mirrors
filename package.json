@@ -6,7 +6,7 @@
     "start": "wrangler dev",
     "dev": "wrangler dev --env=development",
     "deploy": "wrangler deploy",
-    "deploy:pro": "wrangler deploy --env=production"
+    "deploy:pro": "cp wrangler.toml wrangler.toml.bak && cat production.toml >> wrangler.toml && wrangler deploy --env=production && mv wrangler.toml.bak wrangler.toml"
   },
   "dependencies": {},
   "devDependencies": {
