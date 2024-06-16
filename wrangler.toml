@@ -1,0 +1,43 @@
+name = "mirror"
+main = "index.js"
+compatibility_date = "2024-06-15"
+
+[vars]
+NAME = "mirror"
+VERSION = "1.0.0"
+
+[dev]
+ip = "0.0.0.0"
+port = 8787
+local_protocol = "http"
+
+# Development environment
+
+[env.development]
+name = "mirror"
+minify = false
+
+[env.development.vars]
+NAME = "mirror"
+VERSION = "1.0.0"
+DEBUG_PROTOCOL = "http"
+
+# Production environment
+
+[env.production]
+name = "mirror"
+minify = true
+workers_dev = false
+
+[env.production.vars]
+NAME = "mirror"
+VERSION = "1.0.0"
+MODE = "production"
+
+[env.production.vars.SECURE_CONFIG]
+AllowHTML = 0
+EnableMainSite = 1
+MainSiteDomain = []
+EnableSubDomain = 1
+SubKeyList = []
+

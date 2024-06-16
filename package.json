@@ -1,0 +1,15 @@
+{
+  "name": "mirror",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "wrangler dev",
+    "dev": "wrangler dev --env=development",
+    "deploy": "wrangler deploy",
+    "deploy:pro": "wrangler deploy --env=production"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "wrangler": "3.60.3"
+  }
+}
