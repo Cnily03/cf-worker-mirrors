@@ -42,7 +42,7 @@ function sniffService(request) {
 	}
 
 	let isGithubContentURL = /^(https?:\/\/)?(raw|gist)\.githubusercontent\.com($|\/)/.test(basicURLObj.pathname.substring(1))
-	if (isGithubContentURL) {
+	if (isGithubContentURL || isGithubURL) {
 		return "proxy"
 	}
 
@@ -73,10 +73,10 @@ async function handleRequest(request, env, ctx) {
 	} else if (service === "git") {
 		let baseURL = pathAsURLString()
 		baseURL = baseURL.replace(/^http:\/\//, "https://")
-		return Res.proxy(baseURL, request)
+		return Res.proxy(baseURL, request, env)
 	} else if (service === "proxy") {
 		let baseURL = pathAsURLString()
-		return Res.proxy(baseURL, request)
+		return Res.proxy(baseURL, request, env)
 	}
 
 	if (basicURLObj.pathname !== "/") return Res.NotFound()

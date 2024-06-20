@@ -60,14 +60,30 @@ export function sniffUpstream(path, map) {
 }
 
 export const Res = new (class {
-	async proxy(url, request, follow = true) {
-		return fetch(url.toString(), {
+	async proxy(url, request, env, follow = true) {
+		const conf = secureConfig(env)
+
+		const resp = await fetch(url.toString(), {
 			method: request.method,
 			headers: request.headers,
 			...["GET", "HEAD"].includes(request.method) ? {} : { body: await request.arrayBuffer() },
 			redirect: follow ? "follow" : "manual",
 			...(follow ? { follow: typeof follow === "boolean" ? 5 : follow } : {}),
 		})
+
+		// not allow html, return text/html as plain text
+		if (!conf.AllowHTML) {
+			const headers = new Headers(resp.headers)
+			const contentType = headers.get("Content-Type") || ""
+			if (contentType.startsWith("text/html")) headers.set("Content-Type", "text/plain")
+			return new Response(resp.body, {
+				status: resp.status,
+				statusText: resp.statusText,
+				headers: headers
+			})
+		}
+
+		return resp
 	}
 
 	BadRequest(s) {
