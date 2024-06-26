@@ -7,7 +7,7 @@
  *
  * Learn more at https://developers.cloudflare.com/workers/
  */
-import { Res, secureConfig, pathStartsWith } from "./src/utils"
+import { Res, DomainTools, pathStartsWith, Logger } from "./src/utils"
 import * as DockerMirror from "./src/docker"
 import * as GithubMirror from "./src/github"
 
@@ -21,9 +21,14 @@ export default {
 function sniffService(request) {
 	const basicURLObj = new URL(request.url)
 
-	let hasDockerPrefix = pathStartsWith(basicURLObj.pathname, ...Object.keys(DockerMirror.UPSTREAM_MAP))
 	let isUserAgentDocker = (request.headers.get("User-Agent") || "").toLowerCase().includes("docker/")
-	if (hasDockerPrefix || isUserAgentDocker) {
+	let isUserAgentGit = (request.headers.get("User-Agent") || "").toLowerCase().includes("git/")
+
+	// if (isUserAgentDocker) return "docker"
+	// if (isUserAgentGit) return "git"
+
+	let hasDockerPrefix = pathStartsWith(basicURLObj.pathname, ...Object.keys(DockerMirror.UPSTREAM_MAP))
+	if (isUserAgentDocker || hasDockerPrefix) {
 		return "docker"
 	}
 
@@ -35,14 +40,17 @@ function sniffService(request) {
 		return "github"
 	}
 
-	let isGitUserAgent = (request.headers.get("User-Agent") || "").toLowerCase().includes("git/")
 	let isGithubURL = /^(https?:\/\/)?github\.com($|\/)/.test(basicURLObj.pathname.substring(1))
-	if (isGitUserAgent && isGithubURL) {
+	if (isUserAgentGit && isGithubURL) {
 		return "git"
 	}
 
-	let isGithubContentURL = /^(https?:\/\/)?(raw|gist)\.githubusercontent\.com($|\/)/.test(basicURLObj.pathname.substring(1))
-	if (isGithubContentURL || isGithubURL) {
+	const whitelistRegex = {
+		GithubContent: /^(https?:\/\/)?(raw|gist)\.githubusercontent\.com($|\/)/i,
+		Github: /^(https?:\/\/)?github\.com($|\/)/i,
+		GithubStatus: /^(https?:\/\/)?(www\.)?githubstatus\.com($|\/)/i,
+	}
+	if (Object.values(whitelistRegex).some(r => r.test(basicURLObj.pathname.substring(1)))) {
 		return "proxy"
 	}
 
@@ -53,7 +61,7 @@ function sniffService(request) {
  * @param {Request} request
  */
 async function handleRequest(request, env, ctx) {
-	if (!verifyDomain(request, env, ctx)) {
+	if (!DomainTools.auth(request, env, ctx)) {
 		return Res.Forbidden("NOT PERMITTED")
 	}
 
@@ -66,6 +74,13 @@ async function handleRequest(request, env, ctx) {
 
 	const service = sniffService(request)
 
+	Logger.debug(request, {
+		Service: ":bold:" + service,
+		RequestMethod: request.method,
+		RequestURL:  Logger.utils.wrap(request.url),
+		RequestHeaders: Logger.utils.headers(request, ["Host", "User-Agent", "Referer"])
+	})
+
 	if (service === "docker") {
 		return DockerMirror.handleRequest(request, env, ctx)
 	} else if (service === "github") {
@@ -73,10 +88,10 @@ async function handleRequest(request, env, ctx) {
 	} else if (service === "git") {
 		let baseURL = pathAsURLString()
 		baseURL = baseURL.replace(/^http:\/\//, "https://")
-		return Res.proxy(baseURL, request, env)
+		return Res.proxy(baseURL, request, env, ctx)
 	} else if (service === "proxy") {
 		let baseURL = pathAsURLString()
-		return Res.proxy(baseURL, request, env)
+		return Res.proxy(baseURL, request, env, ctx)
 	}
 
 	if (basicURLObj.pathname !== "/") return Res.NotFound()
@@ -94,36 +109,4 @@ async function handleRequest(request, env, ctx) {
 	}
 
 	return Response.json(mainPageJSON, { status: 200 })
-}
-
-/**
- * @param {Request} request
- */
-function verifyDomain(request, env, ctx) {
-	const basicURLObj = new URL(request.url)
-	const curDomain = basicURLObj.hostname
-
-	const conf = secureConfig(env)
-
-	if (!conf.EnableMainSite && !conf.EnableSubDomain) return false
-
-	if (conf.MainSiteDomain.some(s => (s = s.trim()) === "" || s === "*")) {
-		if (conf.EnableMainSite) return true
-		if (conf.EnableSubDomain) return conf.SubKeyList.map(String).some(s => curDomain.startsWith(s + "."))
-		return false
-	}
-
-	conf.MainSiteDomain = conf.MainSiteDomain.sort((a, b) => b.length - a.length)
-
-	for (let d of conf.MainSiteDomain) {
-		if (conf.EnableMainSite && d === curDomain) return true // main domain
-
-		if (conf.EnableSubDomain && curDomain.endsWith("." + d)) { // possible sub domain
-			for (let k of conf.SubKeyList) {
-				if (curDomain === k + "." + d) return true // sub domain
-			}
-		}
-	}
-
-	return false
 }

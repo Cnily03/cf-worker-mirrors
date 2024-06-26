@@ -23,7 +23,8 @@ VERSION = "1.0.0"
 DEBUG_PROTOCOL = "http"
 
 [env.development.vars.SECURE_CONFIG]
-AllowHTML = 0
+AllowMainSiteHTML = 1
+AllowSubDomainHTML = 1
 EnableMainSite = 1
 MainSiteDomain = ["*"]
 EnableSubDomain = 1
@@ -42,7 +43,8 @@ SubKeyList = []
 # MODE = "production"
 
 # [env.production.vars.SECURE_CONFIG]
-# AllowHTML = 0
+# AllowMainSiteHTML = 0
+# AllowSubDomainHTML = 1
 # EnableMainSite = 1
 # MainSiteDomain = ["*"]
 # EnableSubDomain = 1

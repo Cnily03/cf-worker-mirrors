@@ -1,4 +1,4 @@
-import { Res, secureConfig, sniffUpstream } from "./utils"
+import { Res, EnvTools, DomainTools, sniffUpstream } from "./utils"
 
 const GITHUB = "https://github.com"
 const GIST = "https://gist.github.com"
@@ -59,10 +59,10 @@ export async function handleRequest(request, env, ctx) {
 
     if (contentType.startsWith("application/x-")) return resp
 
-    const conf = secureConfig(env)
+    // const conf = EnvTools.secureConfig(env)
 
     // not allow html, return text/html as plain text
-    if (!conf.AllowHTML) {
+    if (!EnvTools.allowHTML(request, env, ctx)) {
         const headers = new Headers(resp.headers)
         if (contentType.startsWith("text/html")) headers.set("Content-Type", "text/plain")
         return new Response(resp.body, {

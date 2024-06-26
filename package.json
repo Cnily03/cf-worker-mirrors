@@ -6,7 +6,8 @@
     "start": "wrangler dev",
     "dev": "wrangler dev --env=development",
     "deploy": "wrangler deploy",
-    "deploy:pro": "cp wrangler.toml wrangler.toml.bak && cat production.toml >> wrangler.toml && wrangler deploy --env=production && mv wrangler.toml.bak wrangler.toml"
+    "deploy:pro:force" : "cp wrangler.toml wrangler.toml.bak && cat production.toml >> wrangler.toml && wrangler deploy --env=production && mv wrangler.toml.bak wrangler.toml",
+    "deploy:pro": "[ -f \"production.toml\" ] && npm run deploy:pro:force || printf \"\\033[31mError:\\033[0m production.toml not found.\""
   },
   "dependencies": {},
   "devDependencies": {
