@@ -45,7 +45,7 @@ export const Logger = new (class {
 				arr.push(`${_key}${this.ansi.orange}(${this.ansi.reset}${_value}${this.ansi.orange})${this.ansi.reset}`)
 			}
 		}
-		console.debug(fmt, arr.join(" "))
+		console.debug(fmt.replace("%s", arr.join(" ")))
 	}
 })()
 
@@ -136,6 +136,7 @@ export const DomainTools = new (class {
 		if (!conf.EnableMainSite && !conf.EnableSubDomain) return this._cache[curDomain] = ret("unknown")
 
 		if (conf.MainSiteDomain.some(s => (s = s.trim()) === "" || s === "*")) {
+			if (conf.EnableMainSite && conf.EnableSubDomain) return conf.SubKeyList.map(String).some(s => curDomain.startsWith(s + ".")) ? ret("sub") : ret("main") // sub domain first, main domain ensured
 			if (conf.EnableMainSite) return ret("main") // main domain
 			if (conf.EnableSubDomain) return conf.SubKeyList.map(String).some(s => curDomain.startsWith(s + ".")) ? ret("sub") : ret("unknown") // sub domain
 			return ret("unknown")

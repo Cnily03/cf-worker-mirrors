@@ -76,8 +76,9 @@ async function handleRequest(request, env, ctx) {
 
 	Logger.debug(request, {
 		Service: ":bold:" + service,
+		DomainType: DomainTools.type(request, env, ctx),
 		RequestMethod: request.method,
-		RequestURL:  Logger.utils.wrap(request.url),
+		RequestURL: Logger.utils.wrap(request.url),
 		RequestHeaders: Logger.utils.headers(request, ["Host", "User-Agent", "Referer"])
 	})
 
