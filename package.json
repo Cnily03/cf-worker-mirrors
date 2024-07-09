@@ -5,8 +5,8 @@
   "scripts": {
     "start": "wrangler dev",
     "dev": "wrangler dev --env=development",
-    "config:nocheck" : "rm -f wrangler.runtime.toml && cp wrangler.toml wrangler.runtime.toml && cat production.toml >> wrangler.runtime.toml",
-    "config" : "[ -f \"production.toml\" ] && npm run config:nocheck || printf \"\\033[31mError:\\033[0m production.toml not found.\" && exit 1",
+    "config:nocheck" : "rm -f wrangler.runtime.toml && cp wrangler.toml wrangler.runtime.toml && cat wrangler.prod.env.toml >> wrangler.runtime.toml",
+    "config" : "[ -f \"wrangler.prod.env.toml\" ] && npm run config:nocheck || printf \"\\033[31mError:\\033[0m wrangler.prod.env.toml not found.\" && exit 1",
     "deploy:pro": "npm run config && wrangler deploy -c wrangler.runtime.toml --env=production",
     "watch:pro": "npm run config && wrangler tail -c wrangler.runtime.toml --env=production"
   },

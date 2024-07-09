@@ -3,5 +3,5 @@ node_modules/**/*
 
 .wrangler
 
-production.toml
-wrangler.runtime.toml
+/wrangler.prod.env.toml
+/wrangler.runtime.toml

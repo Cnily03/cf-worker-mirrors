@@ -14,19 +14,10 @@ This is a Cloudflare Worker that mirrors to another HTTP connection.
 
 ## Configuration
 
-For `SECURE_CONFIG` environment variable, you can use the following JSON format:
+Create file `wrangler.prod.env.toml` at the root of the project, as what in [examples/](./examples/) directory shows.
 
-```javascript
-{
-  "AllowHTML": 0, // Allow responsing HTML
-  "EnableMainSite": 1, // Expose to main domain
-  "EnableSubDomain": 1, // Expose to sub domain
-  "MainSiteDomain": [
-    // type * to match all domain
-    "example.com" // example.com is allowed
-  ],
-  "SubKeyList": [
-    "abcde" // abcde.example.com is allowed
-  ]
-}
-```
+For `SECURE_CONFIG` environment variable, please modify it according to comments and your preferences.
+
+## Development
+
+This project will be refactored and updated in the future.
