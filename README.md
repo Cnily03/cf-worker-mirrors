@@ -24,6 +24,18 @@ bun install
 
 Other package managers can be used as well.
 
+To start a development server, run:
+
+```bash
+bun run dev
+```
+
+Or to deploy to Cloudflare Workers, run:
+
+```bash
+bun run deploy
+```
+
 ### Configuration
 
 Create file `.dev.vars` at the root of the project and add the following content:

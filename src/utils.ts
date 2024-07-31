@@ -54,6 +54,19 @@ export function isContentType(headers: Headers, t: string): boolean {
     return contentTypes.some(ct => ct.split(";")[0].trim() === t)
 }
 
+export function replaceContentType(headers: Headers, _ori: string, _new: string): Headers {
+    if (!headers.has("Content-Type")) return headers
+    let contentTypes = headers.get("Content-Type")?.split(",") || []
+    let newContentTypes = contentTypes.map(ct => {
+        let [t, ...params] = ct.split(";")
+        if (t.trim() === _ori.trim()) return _new.trim() + ';' + params.join(";")
+        return ct
+    })
+    headers.delete("Content-Type")
+    headers.set("Content-Type", newContentTypes.join(","))
+    return headers
+}
+
 export const parseFunctional = <T>(v: T | (() => T)): T => typeof v === "function" ? (v as CallableFunction)() : v
 
 export async function hmac_sha256(key: ArrayBuffer, data: ArrayBuffer) {

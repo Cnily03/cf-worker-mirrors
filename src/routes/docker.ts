@@ -39,6 +39,7 @@ app.get('/v2/', async c => {
         method: c.req.method,
         headers: c.req.raw.headers,
         redirect: 'follow',
+        body: c.req.raw.body
     })
     if (resp.status === 401) {
         const wwwAuth = resp.headers.get('WWW-Authenticate')
@@ -94,6 +95,7 @@ app.on('GET', ['/token', '/v2/auth'], async c => {
         //     method: c.req.method,
         //     headers: c.req.raw.headers,
         //     redirect: 'follow',
+        //     body: c.req.raw.body
         // })
         // if (r.status !== 401) throw new HTTPException(500, { message: 'Unknown response' })
         // const wwwAuth = r.headers.get('WWW-Authenticate')
@@ -128,6 +130,7 @@ app.on('GET', ['/token', '/v2/auth'], async c => {
         method: c.req.method,
         headers: c.req.raw.headers,
         redirect: 'follow',
+        body: c.req.raw.body
     })
 })
 

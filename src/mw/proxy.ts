@@ -1,7 +1,7 @@
 import { createMiddleware } from "hono/factory";
 import type { Env, BlankEnv, MiddlewareHandler } from "hono/types";
 import type { Context } from "hono";
-import { parseFunctional, pathStartsWith, isContentType } from "@/utils";
+import { parseFunctional, pathStartsWith, replaceContentType } from "@/utils";
 
 type ProxyRewrite<T extends Env> = (c: Context<T>, path: string, url: string) => string
 
@@ -37,15 +37,16 @@ export function changeOrigin<T extends Env = BlankEnv>(origin: string | ProxyRew
         urlobj.host = inobj.host
         urlobj.port = inobj.port
         urlobj.pathname = newpath
+        urlobj.search = urlobj.search
         const resp = await fetch(urlobj, {
             method: c.req.method,
             headers: c.req.raw.headers,
             redirect: 'follow',
+            body: c.req.raw.body
         })
         const headers = new Headers(resp.headers)
-        if (opts.forbidHTML && isContentType(headers, 'text/html')) {
-            headers.delete('Content-Type')
-            headers.set('Content-Type', 'text/plain')
+        if (opts.forbidHTML) {
+            replaceContentType(headers, 'text/html', 'text/plain')
         }
         return new Response(resp.body, {
             status: resp.status,
@@ -65,11 +66,11 @@ export function rewriteURL<T extends Env = BlankEnv>(rewrite: ProxyRewrite<T>, o
             method: c.req.method,
             headers: c.req.raw.headers,
             redirect: 'follow',
+            body: c.req.raw.body
         })
         const headers = new Headers(resp.headers)
-        if (opts.forbidHTML && isContentType(headers, 'text/html')) {
-            headers.delete('Content-Type')
-            headers.set('Content-Type', 'text/plain')
+        if (opts.forbidHTML) {
+            replaceContentType(headers, 'text/html', 'text/plain')
         }
         return new Response(resp.body, {
             status: resp.status,
@@ -115,7 +116,8 @@ export function forwardPath<T extends Env = BlankEnv>(options?: Partial<ProxyFor
     return createMiddleware<T>(async (c, next) => {
         opts.forbidHTML = parseFunctional(opts.forbidHTML)
         // format url to standard
-        let next_url = opts.forwardUrl || c.req.path.substring(1)
+        let search = new URL(c.req.url, "http://localhost").search
+        let next_url = opts.forwardUrl || c.req.path.substring(1) + search
         const thisUrlObj = new URL(c.req.url, "http://localhost")
         let _t = _testURLProtocol(next_url)
         if (_t === "invalid") return await next()
@@ -129,14 +131,14 @@ export function forwardPath<T extends Env = BlankEnv>(options?: Partial<ProxyFor
             method: c.req.method,
             headers: c.req.raw.headers,
             redirect: opts.redirect,
+            body: c.req.raw.body
         })
 
         const headers = new Headers(resp.headers)
 
         // convert `text/html` to `text/plain`
-        if (opts.forbidHTML && isContentType(headers, 'text/html')) {
-            headers.delete('Content-Type')
-            headers.set('Content-Type', 'text/plain')
+        if (opts.forbidHTML) {
+            replaceContentType(headers, 'text/html', 'text/plain')
         }
 
         // redirect to the same domain
