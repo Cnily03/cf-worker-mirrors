@@ -4,6 +4,7 @@ compatibility_date = "2024-07-25"
 
 # Development delpoyment
 [env.development]
+name = "mirrors"
 
 [env.development.vars]
 VERSION = "2.0.0"
@@ -13,6 +14,7 @@ FORBID_HTML = true
 
 # Production deployment
 [env.production]
+name = "mirrors"
 minify = true
 
 [env.production.vars]
