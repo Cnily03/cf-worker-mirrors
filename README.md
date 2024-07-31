@@ -12,7 +12,19 @@ This is a Cloudflare Worker that mirrors to another HTTP connection.
 - [ ] [PyPI](https://pypi.org)
 - [ ] [NPM](https://www.npmjs.com)
 
-## Configuration
+## Getting Started
+
+### Installation
+
+Run the following command to install dependencies:
+
+```bash
+bun install
+```
+
+Other package managers can be used as well.
+
+### Configuration
 
 Create file `.dev.vars` at the root of the project and add the following content:
 
@@ -36,6 +48,8 @@ DOMAINS = ["example.com"]
 FORBID_HTML = true
 ```
 
-## Development
+## License
 
-This project will be refactored and updated in the future.
+CopyRight (c) Cnily03. All rights reserved.
+
+Licensed under the [MIT](./LICENSE) License.
