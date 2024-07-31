@@ -5,6 +5,7 @@ interface Env {
 	// Environment secrets
 	SIGN_SECRET: string
 	// Environment variables
+	VERSION: string
 	SERVICE_NAME: string
 	DOMAINS: string[]
 	FORBID_HTML: true

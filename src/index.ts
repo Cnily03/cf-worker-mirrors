@@ -72,13 +72,15 @@ app.use(mount([{
 
 app.use(Proxy.forwardPath<EnvHono>({
 	forbidHTML: () => getenv('FORBID_HTML')!,
-	redirect: 'manual'
+	redirect: 'manual',
+	autoCompleteProtocol: true
 }))
 
 app.onError((err, c) => {
 	if (err instanceof HTTPException) {
 		return err.getResponse()
 	}
+	console.error(err)
 	return c.json({ code: 500, message: 'Internal Server Error' }, 500)
 })
 

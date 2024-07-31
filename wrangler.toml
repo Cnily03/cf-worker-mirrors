@@ -9,6 +9,7 @@ port           = 8787
 local_protocol = "http"
 
 [vars]
+VERSION = "2.0.0"
 SERVICE_NAME = "cf-worker-mirrors"
 DOMAINS = ["loopback.mov.pub", "localwin.lan"]
 FORBID_HTML = true

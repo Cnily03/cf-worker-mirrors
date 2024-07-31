@@ -25,6 +25,8 @@ For more information about secrets, please refer to [Secrets - Cloudflare Worker
 Modify environment variables in [wrangler.deploy.toml](./wrangler.deploy.toml) to match your configuration.
 
 ```toml
+# The version of your worker
+VERSION = "2.0.0"
 # This is the identifier of your worker service
 SERVICE_NAME = "cf-worker-mirrors"
 # Subdomains will be matched based on this value

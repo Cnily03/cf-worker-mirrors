@@ -43,10 +43,16 @@ export function changeOrigin<T extends Env = BlankEnv>(origin: string | ProxyRew
             headers: c.req.raw.headers,
             redirect: 'follow',
         })
-        if (opts.forbidHTML && isContentType(resp.headers, 'text/html')) {
-            resp.headers.delete('Content-Type')
-            resp.headers.set('Content-Type', 'text/plain')
+        const headers = new Headers(resp.headers)
+        if (opts.forbidHTML && isContentType(headers, 'text/html')) {
+            headers.delete('Content-Type')
+            headers.set('Content-Type', 'text/plain')
         }
+        return new Response(resp.body, {
+            status: resp.status,
+            statusText: resp.statusText,
+            headers
+        })
     })
 }
 
@@ -61,11 +67,16 @@ export function rewriteURL<T extends Env = BlankEnv>(rewrite: ProxyRewrite<T>, o
             headers: c.req.raw.headers,
             redirect: 'follow',
         })
-        if (opts.forbidHTML && isContentType(resp.headers, 'text/html')) {
-            resp.headers.delete('Content-Type')
-            resp.headers.set('Content-Type', 'text/plain')
+        const headers = new Headers(resp.headers)
+        if (opts.forbidHTML && isContentType(headers, 'text/html')) {
+            headers.delete('Content-Type')
+            headers.set('Content-Type', 'text/plain')
         }
-        return resp
+        return new Response(resp.body, {
+            status: resp.status,
+            statusText: resp.statusText,
+            headers
+        })
     })
 }
 
@@ -74,38 +85,73 @@ type ProxyForwardOptions = {
     forwardUrl: string
     forbidHTML: Functional<boolean>
     redirect: "manual" | "follow"
+    autoCompleteProtocol: boolean
 }
 
 const defaultForwardOptions: ProxyForwardOptions = {
     forwardUrl: '',
     forbidHTML: true,
-    redirect: "manual"
+    redirect: "manual",
+    autoCompleteProtocol: true
+}
+
+export function _testURLProtocol(url: string): "invalid" | "miss_protocol" | "has_protocol" {
+    if (!/\w+:\/\/./.test(url)) {
+        let domain_url = ''
+        if (/@/.test(url)) {
+            domain_url = url.slice(url.indexOf('@') + 1)
+        } else {
+            domain_url = url
+        }
+        // (auth@)domain(/path)
+        let match = /([0-9a-zA-Z-.]+)(\/|$)/.exec(domain_url)
+        if (match === null) return "invalid"
+        return "miss_protocol"
+    }
+    return "has_protocol"
 }
 
 export function forwardPath<T extends Env = BlankEnv>(options?: Partial<ProxyForwardOptions>): MiddlewareHandler<any, string, {}> {
     const opts: ProxyForwardOptions = Object.assign({}, defaultForwardOptions, options)
     opts.forbidHTML = parseFunctional(opts.forbidHTML)
     return createMiddleware<T>(async (c, next) => {
+        // format url to standard
         let next_url = opts.forwardUrl || c.req.path.substring(1)
-        if (!/^https?:\/\//.test(next_url)) return await next()
         const thisUrlObj = new URL(c.req.url, "http://localhost")
+        let _t = _testURLProtocol(next_url)
+        if (_t === "invalid") return await next()
+        else if (_t === "miss_protocol") {
+            if (opts.autoCompleteProtocol) next_url = `${thisUrlObj.protocol}//${next_url}`
+            else return await next()
+        }
+
         const forwardUrlObj = new URL(next_url) // no base parameter, if not valid, it will throw
-        console.log(forwardUrlObj.href)
         const resp = await fetch(forwardUrlObj, {
             method: c.req.method,
             headers: c.req.raw.headers,
             redirect: opts.redirect,
         })
-        if (opts.forbidHTML && isContentType(resp.headers, 'text/html')) {
-            resp.headers.delete('Content-Type')
-            resp.headers.set('Content-Type', 'text/plain')
+
+        const headers = new Headers(resp.headers)
+
+        // convert `text/html` to `text/plain`
+        if (opts.forbidHTML && isContentType(headers, 'text/html')) {
+            headers.delete('Content-Type')
+            headers.set('Content-Type', 'text/plain')
         }
-        if (opts.redirect === "manual" && resp.headers.has('Location')) {
-            const location = resp.headers.get('Location')
-            resp.headers.delete('Location')
-            resp.headers.set('Location', new URL(thisUrlObj.origin + '/' + location).href)
+
+        // redirect to the same domain
+        if (opts.redirect === "manual" && headers.has('Location')) {
+            const location = headers.get('Location')
+            headers.delete('Location')
+            headers.set('Location', new URL(thisUrlObj.origin + '/' + location).href)
         }
-        return resp
+
+        return new Response(resp.body, {
+            status: resp.status,
+            statusText: resp.statusText,
+            headers
+        })
     })
 }
 

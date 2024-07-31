@@ -6,6 +6,7 @@ compatibility_date = "2024-07-25"
 [env.development]
 
 [env.development.vars]
+VERSION = "2.0.0"
 SERVICE_NAME = "cf-worker-mirrors"
 DOMAINS = []
 FORBID_HTML = true
@@ -15,6 +16,7 @@ FORBID_HTML = true
 minify = true
 
 [env.production.vars]
+VERSION = "2.0.0"
 SERVICE_NAME = "cf-worker-mirrors"
 DOMAINS = []
 FORBID_HTML = true
