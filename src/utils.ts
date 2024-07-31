@@ -54,6 +54,8 @@ export function isContentType(headers: Headers, t: string): boolean {
     return contentTypes.some(ct => ct.split(";")[0].trim() === t)
 }
 
+export const parseFunctional = <T>(v: T | (() => T)): T => typeof v === "function" ? (v as CallableFunction)() : v
+
 export async function hmac_sha256(key: ArrayBuffer, data: ArrayBuffer) {
     const key_1 = await crypto.subtle.importKey(
         'raw',

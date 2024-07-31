@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import type { Env, BlankEnv, MiddlewareHandler } from 'hono/types';
 import { createMiddleware } from 'hono/factory';
+import { parseFunctional } from '@/utils';
 
 type SubdomainRouteElem<T extends Env = BlankEnv> = {
     sub: string | string[],
@@ -19,7 +20,7 @@ const defaultOptions: SubdomainRouteOptions = {
 export default function subdomain<T extends Env = BlankEnv>(elem: SubdomainRouteElem<T>[], options: Partial<SubdomainRouteOptions> = {}) {
     const opts = Object.assign({}, defaultOptions, options)
     return createMiddleware<T>(async (c, next) => {
-        if (typeof opts.domains === 'function') opts.domains = opts.domains()
+        opts.domains = parseFunctional(opts.domains)
         if (typeof opts.domains === 'undefined' || opts.domains.length === 0) return await next()
         for (let e of elem) {
             const urlobj = new URL(c.req.raw.url, 'http://localhost')

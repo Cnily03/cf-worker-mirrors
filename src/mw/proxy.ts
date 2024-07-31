@@ -1,10 +1,9 @@
 import { createMiddleware } from "hono/factory";
 import type { Env, BlankEnv, MiddlewareHandler } from "hono/types";
 import type { Context } from "hono";
-import { pathStartsWith, isContentType } from "@/utils";
+import { parseFunctional, pathStartsWith, isContentType } from "@/utils";
 
 type ProxyRewrite<T extends Env> = (c: Context<T>, path: string, url: string) => string
-const parseFunctional = <T>(v: T | (() => T)): T => typeof v === "function" ? (v as CallableFunction)() : v
 
 interface ProxyOptions {
     forbidHTML: Functional<boolean>
@@ -18,8 +17,8 @@ export function changeOrigin<T extends Env = BlankEnv>(origin: string | ProxyRew
 export function changeOrigin<T extends Env = BlankEnv>(origin: string | ProxyRewrite<T>, mount_path?: string, options?: Partial<ProxyOptions>): MiddlewareHandler<any, string, {}>
 export function changeOrigin<T extends Env = BlankEnv>(origin: string | ProxyRewrite<T>, arg: string | ProxyRewrite<T> = '', options?: Partial<ProxyOptions>) {
     const opts: ProxyOptions = Object.assign({}, defaultOptions, options)
-    opts.forbidHTML = parseFunctional(opts.forbidHTML)
     return createMiddleware<T>(async (c, next) => {
+        opts.forbidHTML = parseFunctional(opts.forbidHTML)
         let newpath = ''
         if (typeof arg === "undefined") {
             newpath = c.req.path
@@ -58,8 +57,8 @@ export function changeOrigin<T extends Env = BlankEnv>(origin: string | ProxyRew
 
 export function rewriteURL<T extends Env = BlankEnv>(rewrite: ProxyRewrite<T>, options?: Partial<ProxyOptions>): MiddlewareHandler<any, string, {}> {
     const opts: ProxyOptions = Object.assign({}, defaultOptions, options)
-    opts.forbidHTML = parseFunctional(opts.forbidHTML)
     return createMiddleware<T>(async (c, next) => {
+        opts.forbidHTML = parseFunctional(opts.forbidHTML)
         let newurl = rewrite(c, c.req.path, c.req.url)
         if (!newurl) return await next()
         const resp = await fetch(newurl, {
@@ -113,8 +112,8 @@ export function _testURLProtocol(url: string): "invalid" | "miss_protocol" | "ha
 
 export function forwardPath<T extends Env = BlankEnv>(options?: Partial<ProxyForwardOptions>): MiddlewareHandler<any, string, {}> {
     const opts: ProxyForwardOptions = Object.assign({}, defaultForwardOptions, options)
-    opts.forbidHTML = parseFunctional(opts.forbidHTML)
     return createMiddleware<T>(async (c, next) => {
+        opts.forbidHTML = parseFunctional(opts.forbidHTML)
         // format url to standard
         let next_url = opts.forwardUrl || c.req.path.substring(1)
         const thisUrlObj = new URL(c.req.url, "http://localhost")
