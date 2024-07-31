@@ -1,17 +1,20 @@
 {
-  "name": "mirror",
-  "version": "1.0.0",
+  "name": "cf-worker-mirrors",
+  "version": "2.0.0",
   "private": true,
   "scripts": {
+    "deploy": "wrangler deploy -c wrangler.deploy.toml --env production",
+    "deploy:dev": "wrangler deploy -c wrangler.deploy.toml --env development",
+    "dev": "wrangler dev",
     "start": "wrangler dev",
-    "dev": "wrangler dev --env=development",
-    "config:nocheck" : "rm -f wrangler.runtime.toml && cp wrangler.toml wrangler.runtime.toml && cat wrangler.prod.env.toml >> wrangler.runtime.toml",
-    "config" : "[ -f \"wrangler.prod.env.toml\" ] && npm run config:nocheck || printf \"\\033[31mError:\\033[0m wrangler.prod.env.toml not found.\" && exit 1",
-    "deploy:pro": "npm run config && wrangler deploy -c wrangler.runtime.toml --env=production",
-    "watch:pro": "npm run config && wrangler tail -c wrangler.runtime.toml --env=production"
+    "cf-typegen": "wrangler types"
   },
-  "dependencies": {},
   "devDependencies": {
-    "wrangler": "3.60.3"
+    "@cloudflare/workers-types": "^4.20240725.0",
+    "typescript": "^5.5.2",
+    "wrangler": "^3.60.3"
+  },
+  "dependencies": {
+    "hono": "^4.5.3"
   }
 }
