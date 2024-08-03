@@ -5,6 +5,7 @@ import subdomain from "./mw/subdomain";
 import ua from "@/mw/ua";
 import mount from "./mw/mount";
 import Proxy from "./mw/proxy";
+import indexApp from "@/routes/index";
 import dockerApp from "@/routes/docker";
 import gitApp from "@/routes/git";
 
@@ -75,6 +76,8 @@ app.use(Proxy.forwardPath<EnvHono>({
 	redirect: 'manual',
 	autoCompleteProtocol: true
 }))
+
+app.route('/', indexApp)
 
 app.onError((err, c) => {
 	if (err instanceof HTTPException) {
