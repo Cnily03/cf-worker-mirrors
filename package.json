@@ -11,11 +11,11 @@
     "cf-typegen": "wrangler types"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20240725.0",
-    "typescript": "^5.5.2",
-    "wrangler": "^3.60.3"
+    "@cloudflare/workers-types": "^4.20241224.0",
+    "typescript": "^5.7.2",
+    "wrangler": "^3.99.0"
   },
   "dependencies": {
-    "hono": "^4.5.3"
+    "hono": "^4.6.15"
   }
 }

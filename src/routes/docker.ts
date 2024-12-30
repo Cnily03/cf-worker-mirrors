@@ -2,74 +2,19 @@ import { Hono } from "hono"
 import { HTTPException } from "hono/http-exception"
 import { signData, verifyData } from "@/utils"
 import Proxy from "@/mw/proxy"
+import wwwAuth from "@/mw/docker-auth"
 
 const app = new Hono<EnvHono>()
 
 const UPSTREAM = 'https://registry-1.docker.io'
 
-function parseAuth(auth: string | null) {
-    if (typeof auth !== 'string') { return null }
-    // WWW-Authenticate: scheme k=v, k=v, k=v
-    let scheme = /^(\S+)\s+/.exec(auth)![1]
-    const parts = auth.replace(/^\S+\s+/, '').split(/,\s*/)
-    const obj: Record<string, string> = {}
-    for (const part of parts) {
-        let where = part.indexOf('=')
-        let k = part.slice(0, where)
-        let v = part.slice(where + 1)
-        obj[k] = v
-    }
-    return { scheme: scheme, kv: obj }
-}
-
-function genAuth(scheme: string, obj: Record<string, string>, join = ',') {
-    let auth = scheme + ' '
-    for (const [k, v] of Object.entries(obj)) {
-        auth += `${k}=${v}${join}`
-    }
-    return auth.slice(0, -join.length)
-}
+// replace the `WWW-Authenticate` header with the current origin before responding
+app.use(wwwAuth())
 
 // Login with token
-app.get('/v2/', async c => {
-    const PATH_PREFIX = c.req.raw.path_prefix || ''
-    const upstream = c.req.raw.custom_data?.upstream || UPSTREAM
-
-    let resp = await fetch(new URL(upstream + c.req.routePath), {
-        method: c.req.method,
-        headers: c.req.raw.headers,
-        redirect: 'follow',
-        body: c.req.raw.body
-    })
-    if (resp.status === 401) {
-        const wwwAuth = resp.headers.get('WWW-Authenticate')
-        const data = parseAuth(wwwAuth)
-        if (!data || !data.kv["realm"] || !data.kv["service"]) return resp
-
-        const thisUrlObj = new URL(c.req.url, "http://localhost")
-        let realm: string = JSON.parse(data.kv["realm"])
-        const realmUrlObj = new URL(realm, thisUrlObj.origin)
-        thisUrlObj.pathname = PATH_PREFIX + realmUrlObj.pathname
-        let token = await signData({
-            realm: realm,
-            service: JSON.parse(data.kv["service"]),
-        }, c.env["SIGN_SECRET"]!)
-        thisUrlObj.searchParams.set('mirror_token', token)
-        const fmtWwwAuth = genAuth(data.scheme, {
-            realm: JSON.stringify(thisUrlObj.href),
-            service: JSON.stringify(c.env.SERVICE_NAME),
-        })
-        const respHeaders = new Headers(resp.headers)
-        respHeaders.set('WWW-Authenticate', fmtWwwAuth)
-        return new Response(resp.body, {
-            status: resp.status,
-            statusText: resp.statusText,
-            headers: respHeaders,
-        })
-    } else {
-        return resp
-    }
-})
+// app.on('GET', ['/v2', '/v2/'], async c => {
+// * This is already handled by the `wwwAuth` middleware
+// })
 
 // Get token (with account details)
 app.on('GET', ['/token', '/v2/auth'], async c => {
