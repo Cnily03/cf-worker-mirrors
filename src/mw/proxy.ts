@@ -143,7 +143,11 @@ export function forwardPath<T extends Env = BlankEnv>(options?: Partial<ProxyFor
 
         // redirect to the same domain
         if (opts.redirect === "manual" && headers.has('Location')) {
-            const location = headers.get('Location')
+            let location = headers.get('Location')!
+            // complete the protocol and host
+            try { new URL(location) } catch (e) {
+                location = `${forwardUrlObj.origin}${location}`
+            }
             headers.delete('Location')
             headers.set('Location', new URL(thisUrlObj.origin + '/' + location).href)
         }
