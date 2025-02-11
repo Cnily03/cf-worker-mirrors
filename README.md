@@ -46,11 +46,11 @@ SIGN_SECRET="<your secret>" # This is the secret key for signature
 
 For more information about secrets, please refer to [Secrets - Cloudflare Workers docs](https://developers.cloudflare.com/workers/configuration/secrets/).
 
-Modify environment variables in [wrangler.deploy.toml](./wrangler.deploy.toml) to match your configuration.
+Modify environment variables in [wrangler.deploy.sample.toml](./wrangler.deploy.sample.toml) to match your configuration. And rename it to `wrangler.toml`.
 
 ```toml
 # The version of your worker
-VERSION = "2.0.0"
+VERSION = "2.1.0"
 # This is the identifier of your worker service
 SERVICE_NAME = "cf-worker-mirrors"
 # Subdomains will be matched based on this value
