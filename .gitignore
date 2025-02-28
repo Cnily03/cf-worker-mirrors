@@ -1,7 +1,7 @@
 node_modules/
 node_modules/**/*
 
-wrangler.deploy.toml
-.wrangler
+.wrangler/
+wrangler.toml
 
 .dev.vars

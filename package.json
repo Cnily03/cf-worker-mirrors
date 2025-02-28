@@ -3,8 +3,8 @@
   "version": "2.1.0",
   "private": true,
   "scripts": {
-    "deploy": "wrangler deploy -c wrangler.deploy.toml --env production",
-    "deploy:dev": "wrangler deploy -c wrangler.deploy.toml --env development",
+    "deploy": "wrangler deploy --env production",
+    "deploy:dev": "wrangler deploy --env development",
     "dev": "wrangler dev",
     "start": "wrangler dev",
     "tail": "wrangler tail mirrors",

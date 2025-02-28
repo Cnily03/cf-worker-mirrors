@@ -46,7 +46,7 @@ SIGN_SECRET="<your secret>" # This is the secret key for signature
 
 For more information about secrets, please refer to [Secrets - Cloudflare Workers docs](https://developers.cloudflare.com/workers/configuration/secrets/).
 
-Modify environment variables in [wrangler.deploy.sample.toml](./wrangler.deploy.sample.toml) to match your configuration. And rename it to `wrangler.toml`.
+Move [wrangler.sample.toml](./wrangler.sample.toml) to `wrangler.toml` and modify environment variables to match your configuration.
 
 ```toml
 # The version of your worker
