@@ -19,7 +19,7 @@ This is a Cloudflare Worker that mirrors to another HTTP connection.
 Run the following command to install dependencies:
 
 ```bash
-bun install
+pnpm install
 ```
 
 Other package managers can be used as well.
@@ -27,13 +27,13 @@ Other package managers can be used as well.
 To start a development server, run:
 
 ```bash
-bun run dev
+pnpm dev
 ```
 
 Or to deploy to Cloudflare Workers, run:
 
 ```bash
-bun run deploy
+pnpm run deploy
 ```
 
 ### Configuration
